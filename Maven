@@ -15,4 +15,3 @@ Example job configuration:
 - Provide the Maven version and set the goal as install
 - Click Apply and Save
 - Click Build Now and check the console output
-
