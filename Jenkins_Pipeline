@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    
+    tools {
+        maven 'Maven 3.9.16'
+    }
+    
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', credentialsId: 'GIT', url: 'https://github.com/SyedAbid26/Test_Project.git'
+            }
+        }
+        
+        stage('Verify Tools') {
+            steps {
+                sh 'mvn -version'
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                sh 'mvn clean package'
+            }
+        }
+        
+        stage('Artifact Uploader') {
+            steps {
+                nexusArtifactUploader artifacts: [[artifactId: 'my-app', classifier: '', file: 'target/my-app.war', type: 'war']], credentialsId: 'nexus', groupId: 'com.company', nexusUrl: '34.227.98.237:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'Jenkins', version: '1.0-SNAPSHOT'
+            }
+        }
+        
+        stage('Deploying to Tomcat') {
+            steps {
+                sshagent(['SSH']) {
+                    sh 'scp -o StrictHostKeyChecking=no target/my-app.war root@ip-172-31-29-137:/apache-tomcat/webapps/'
+                }
+            }
+        }
+    }
+}
